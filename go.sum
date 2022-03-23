@@ -1,0 +1,6 @@
+github.com/antihax/optional v1.0.0 h1:xK2lYat7ZLaVVcIuj82J8kIro4V6kDe0AUDFboUCwcg=
+github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
+github.com/aws/aws-lambda-go v1.6.0 h1:T+u/g79zPKw1oJM7xYhvpq7i4Sjc0iVsXZUaqRVVSOg=
+github.com/aws/aws-lambda-go v1.6.0/go.mod h1:zUsUQhAUjYzR8AuduJPCfhBuKWUaDbQiPOG+ouzmE1A=
+github.com/gateio/gateapi-go/v6 v6.23.2 h1:D6msiE8tZKpIHPEYRg2B2MwGgT3loMu2yzcNoGhtybI=
+github.com/gateio/gateapi-go/v6 v6.23.2/go.mod h1:racCcjrdyOUbRDO5eCUGUiyDPrF/ZmwBj/bupPZTVLY=
