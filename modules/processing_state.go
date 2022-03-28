@@ -1,4 +1,4 @@
-package coin_purchase
+package modules
 
 import (
 	"fmt"
@@ -6,12 +6,20 @@ import (
 )
 
 type ProcessingState struct {
-	StateName     string
-	OrderExecutor *OrderExecutor
+	StateName          string
+	OrderExecutor      *OrderExecutor
+	ProcessingStrategy ProcessingStrategy
 }
 
 func (ps *ProcessingState) ProcessOrder() error {
 	log.Println("order processing")
+	order, err := ps.ProcessingStrategy.Execute(ps.OrderExecutor.Ticker)
+
+	if err != nil {
+		return fmt.Errorf("order execution error: %s", err)
+	}
+
+	ps.OrderExecutor.SetOrder(order)
 	ps.OrderExecutor.SetState(ps.OrderExecutor.FulfilledState)
 	return ps.OrderExecutor.FinishOrder()
 }

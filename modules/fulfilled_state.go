@@ -1,8 +1,7 @@
-package coin_purchase
+package modules
 
 import (
 	"fmt"
-	//"github.com/Projects/coin-purchase/modules/coin_purchase"
 	"log"
 )
 

@@ -1,4 +1,4 @@
-package coin_purchase
+package modules
 
 import (
 	"fmt"

@@ -2,32 +2,32 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"github.com/Projects/coin-purchase/modules/coin_purchase"
-	"github.com/Projects/coin-purchase/modules/exchange_service"
+	"github.com/Projects/coin-purchase/modules"
 )
 
 func Handler(ctx context.Context) {
-	orderExecutor := coin_purchase.NewOrderExecutor()
 
-	err := orderExecutor.PlaceOrder()
-	if err != nil {
-		fmt.Println(err)
-	}
 }
 
 func main() {
+	base := "BTC"
+
+	tradingBot := modules.NewTradingBot(modules.Gate, modules.PurchaseOnlyType)
+
+	tradingBot.Trade(base)
+
+	//bot := bot.NewTradingBot()
+	//
+	//bot
+
 	//lambda.Start(Handler)
 
-	//orderExecutor := coin_purchase.NewOrderExecutor()
+	//start := time.Now()
 	//
-	//err := orderExecutor.PlaceOrder()
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-
-	gateService := exchange_service.NewGateService()
-	result, _ := gateService.ListCandlesticks("BTC_USDT")
-
-	fmt.Println(result)
+	//gateExchangeService := exchange_service.NewGateExchangeService()
+	//result, _ := gateExchangeService.GetPair("BTC", "USDT")
+	//
+	//fmt.Println(result)
+	//elapsed := time.Since(start)
+	//log.Printf("Binomial took %s", elapsed)
 }

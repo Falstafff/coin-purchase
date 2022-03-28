@@ -1,4 +1,4 @@
-package coin_purchase
+package modules
 
 type State interface {
 	IsOrderCanBePlaced() (bool, error)

@@ -1,14 +1,16 @@
-package coin_purchase
+package modules
 
 type OrderExecutor struct {
 	NewState        State
 	ProcessingState State
 	FulfilledState  State
+	CurrentState    State
 
-	CurrentState State
+	Ticker *CoinTicker
+	Order  Order
 }
 
-func NewOrderExecutor() *OrderExecutor {
+func NewOrderExecutor(processingStrategy ProcessingStrategy) OrderExecutor {
 	orderExecutor := &OrderExecutor{}
 
 	newState := &NewState{
@@ -16,8 +18,9 @@ func NewOrderExecutor() *OrderExecutor {
 		OrderExecutor: orderExecutor,
 	}
 	processingState := &ProcessingState{
-		StateName:     "processing",
-		OrderExecutor: orderExecutor,
+		StateName:          "processing",
+		OrderExecutor:      orderExecutor,
+		ProcessingStrategy: processingStrategy,
 	}
 	fulfilledState := &FulfilledState{
 		StateName:     "fulfilled",
@@ -29,7 +32,7 @@ func NewOrderExecutor() *OrderExecutor {
 	orderExecutor.ProcessingState = processingState
 	orderExecutor.FulfilledState = fulfilledState
 
-	return orderExecutor
+	return *orderExecutor
 }
 
 func (o *OrderExecutor) IsOrderCanBePlaced() (bool, error) {
@@ -54,4 +57,8 @@ func (o *OrderExecutor) ProcessOrder() error {
 
 func (o *OrderExecutor) SetState(s State) {
 	o.CurrentState = s
+}
+
+func (o *OrderExecutor) SetOrder(order Order) {
+	o.Order = order
 }

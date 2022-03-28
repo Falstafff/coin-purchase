@@ -1,8 +1,9 @@
-package exchange_service
+package modules
 
 import (
 	"context"
 	"fmt"
+	"github.com/antihax/optional"
 	"github.com/gateio/gateapi-go/v6"
 )
 
@@ -10,7 +11,7 @@ type GateApiService struct {
 	apiClient *gateapi.APIClient
 }
 
-func NewApiService() GateApiService {
+func NewGateApiService() GateApiService {
 	apiClient := gateapi.NewAPIClient(gateapi.NewConfiguration())
 	GateApiService := GateApiService{apiClient}
 	return GateApiService
@@ -34,18 +35,24 @@ func (gs *GateApiService) CreateConditionalOrder(order gateapi.SpotPriceTriggere
 	return result, handleGateError(err)
 }
 
-func (gs *GateApiService) ListCandlesticks(pair string) ([][]string, error) {
+func (gs *GateApiService) ListCandlesticks(pair string, options *gateapi.ListCandlesticksOpts) ([][]string, error) {
 	cxt := createStandardContext()
-	result, _, err := gs.apiClient.SpotApi.ListCandlesticks(cxt, pair, nil)
+	result, _, err := gs.apiClient.SpotApi.ListCandlesticks(cxt, pair, options)
 	return result, handleGateError(err)
 }
 
-func (gs *GateApiService) ListTrades(pair string) ([]gateapi.Trade, error) {
+func (gs *GateApiService) ListTrades(pair string, options *gateapi.ListTradesOpts) ([]gateapi.Trade, error) {
 	cxt := createStandardContext()
-	result, _, err := gs.apiClient.SpotApi.ListTrades(cxt, pair, nil)
+	result, _, err := gs.apiClient.SpotApi.ListTrades(cxt, pair, options)
 	return result, handleGateError(err)
 }
 
+func (gs *GateApiService) ListTickers(pair string) ([]gateapi.Ticker, error) {
+	cxt := createStandardContext()
+	options := &gateapi.ListTickersOpts{CurrencyPair: optional.NewString(pair)}
+	result, _, err := gs.apiClient.SpotApi.ListTickers(cxt, options)
+	return result, handleGateError(err)
+}
 func createStandardContext() context.Context {
 	return context.Background()
 }
