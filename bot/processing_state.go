@@ -1,4 +1,4 @@
-package modules
+package bot
 
 import (
 	"fmt"

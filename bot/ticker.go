@@ -1,4 +1,4 @@
-package modules
+package bot
 
 type CoinTicker struct {
 	Pair      string

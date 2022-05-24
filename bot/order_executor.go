@@ -1,4 +1,4 @@
-package modules
+package bot
 
 type OrderExecutor struct {
 	NewState        State
@@ -10,7 +10,7 @@ type OrderExecutor struct {
 	Order  Order
 }
 
-func NewOrderExecutor(processingStrategy ProcessingStrategy) OrderExecutor {
+func NewOrderExecutor(processingStrategy ProcessingStrategy) *OrderExecutor {
 	orderExecutor := &OrderExecutor{}
 
 	newState := &NewState{
@@ -32,7 +32,7 @@ func NewOrderExecutor(processingStrategy ProcessingStrategy) OrderExecutor {
 	orderExecutor.ProcessingState = processingState
 	orderExecutor.FulfilledState = fulfilledState
 
-	return *orderExecutor
+	return orderExecutor
 }
 
 func (o *OrderExecutor) IsOrderCanBePlaced() (bool, error) {

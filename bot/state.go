@@ -1,4 +1,4 @@
-package modules
+package bot
 
 type State interface {
 	IsOrderCanBePlaced() (bool, error)

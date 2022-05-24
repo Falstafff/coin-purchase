@@ -1,4 +1,4 @@
-package modules
+package bot
 
 import (
 	"fmt"
@@ -11,27 +11,21 @@ type GateExchangeService struct {
 	gateApiService GateApiService
 }
 
-func NewGateExchangeService(serviceType ExchangeServiceType) ExchangeService {
-	switch serviceType {
-	case Gate:
-		return &GateExchangeService{NewGateApiService()}
-	default:
-		return nil
-	}
-}
-
-func (ges *GateExchangeService) Purchase(ticker *CoinTicker, amountUsd float32) (Order, error) {
+func (ges *GateExchangeService) Purchase(ticker *CoinTicker, amountUsd string) (Order, error) {
 	order := Order{}
-	// todo take out to config
-	margin := 1.02
+	margin := ConfigInstance().BuyPriceMargin
 	finalPrice := decimal.RequireFromString(ticker.LastPrice).Mul(decimal.NewFromFloat(margin))
-	finalAmount := decimal.NewFromFloat32(amountUsd).Div(finalPrice)
+	finalAmount := decimal.RequireFromString(amountUsd).Div(finalPrice)
 
 	gateOrder, err := ges.gateApiService.CreateOrder(gateapi.Order{
-		Account:      finalAmount.String(),
-		Price:        finalPrice.String(),
+		Type:         "limit",
+		Account:      "spot",
 		Side:         "buy",
+		Amount:       finalAmount.String(),
+		Price:        finalPrice.String(),
 		CurrencyPair: ticker.Pair,
+		TimeInForce:  "gtc",
+		AutoBorrow:   false,
 	})
 
 	if err != nil {
@@ -93,4 +87,24 @@ func (ges *GateExchangeService) GetLastPrice(pair string) (string, error) {
 	}
 
 	return tickers[0].Last, nil
+}
+
+func (ges *GateExchangeService) GetAllPairs() ([]CurrencyPair, error) {
+	pairs, err := ges.gateApiService.ListCurrencyPairs()
+
+	if err != nil {
+		return nil, err
+	}
+
+	currencyPairs := make([]CurrencyPair, len(pairs))
+
+	for i, pair := range pairs {
+		currencyPairs[i] = CurrencyPair{
+			Base:  CoinBase(pair.Base),
+			Quote: CoinQuote(pair.Quote),
+			Id:    PairId(pair.Id),
+		}
+	}
+
+	return currencyPairs, nil
 }

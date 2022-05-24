@@ -12,6 +12,9 @@
 # Happy Coding!
 
 service: coinpurchase
+
+#variablesResolutionMode: 20210326
+
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
 #org: your-org-name
@@ -20,35 +23,53 @@ service: coinpurchase
 # Check out our docs for more details
 frameworkVersion: '3'
 
+useDotenv: true
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-step-functions
+  - serverless-offline
 provider:
   name: aws
   runtime: go1.x
-
+  # you can define service wide environment variables here
+  environment:
+    GATE_API_KEY: ${env:GATE_API_KEY}
+    GATE_SECRET_KEY: ${env:GATE_SECRET_KEY}
+    PURCHASE_AMOUNT_IN_USDT: ${env:PURCHASE_AMOUNT_IN_USDT}
+    CRYPTO_DATA_BUCKET: ${self:custom.buckets.cryptoData.name}
 # you can overwrite defaults here
-  stage: dev
+  stage: prod
   region: eu-west-1
 
-# you can add statements to the Lambda function's IAM Role here
-#  iam:
-#    role:
-#      statements:
-#        - Effect: "Allow"
-#          Action:
-#            - "s3:ListBucket"
-#          Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#        - Effect: "Allow"
-#          Action:
-#            - "s3:PutObject"
-#          Resource:
-#            Fn::Join:
-#              - ""
-#              - - "arn:aws:s3:::"
-#                - "Ref" : "ServerlessDeploymentBucket"
-#                - "/*"
+  # you can add statements to the Lambda function's IAM Role here
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: ${self:custom.buckets.cryptoData.arn}
+        - Effect: Allow
+          Action:
+            - events:PutEvents
+          Resource:
+            -  arn:aws:events:*
+  #        - Effect: "Allow"
+  #          Action:
+  #            - "s3:PutObject"
+  #          Resource:
+  #            Fn::Join:
+  #              - ""
+  #              - - "arn:aws:s3:::"
+  #                - "Ref" : "ServerlessDeploymentBucket"
+  #                - "/*"
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+custom:
+  buckets:
+    cryptoData:
+      name: ${self:service}-${self:provider.stage}-crypto-data-backet
+      arn: arn:aws:s3:::${self:custom.buckets.cryptoData.name}/*
 
 package:
   patterns:
@@ -56,8 +77,55 @@ package:
     - ./bin/**
 
 functions:
-  trade:
-    handler: bin/trade
+  coinPurchase:
+    handler: bin/coinPurchase
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - bot.coinPurchase
+  syncCoins:
+    handler: bin/syncCoins
+    events:
+      - schedule: rate(1 hour)
+  checkCoins:
+    handler: bin/checkCoins
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - notify.importantNews
+
+stepFunctions:
+  stateMachines:
+    purchaseState:
+      type: STANDARD
+      name: purchaseCoinsState-${self:provider.stage}
+      events:
+        - eventBridge:
+            event:
+              source:
+                - bot.trade
+      definition:
+        StartAt: PurchaseCoins
+        States:
+          PurchaseCoins:
+            Type: Map
+            InputPath: $
+            ItemsPath: $.detail.coins
+            MaxConcurrency: 0
+            Iterator:
+              StartAt: InvokePurchaseCoinsLambda
+              States:
+                InvokePurchaseCoinsLambda:
+                  Type: Task
+                  Resource:
+                    Fn::GetAtt: [ coinPurchase, Arn ]
+                  End: true
+            ResultPath: $
+            End: true
+
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -84,7 +152,7 @@ functions:
 #            detail:
 #              state:
 #                - pending
-#      - cloudwatchLog: '/aws/lambda/trade'
+#      - cloudwatchLog: '/aws/lambda/coinPurchase'
 #      - cognitoUserPool:
 #          pool: MyUserPool
 #          trigger: PreSignUp
@@ -93,19 +161,19 @@ functions:
 #          priority: 1
 #          conditions:
 #            host: example.com
-#            path: /trade
+#            path: /coinPurchase
 
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
+resources:
+  Resources:
+    CryptoDataBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.buckets.cryptoData.name}
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"

@@ -1,4 +1,4 @@
-package modules
+package bot
 
 import (
 	"log"
@@ -32,7 +32,7 @@ type PurchaseOnly struct {
 
 func (op *PurchaseOnly) Execute(ticker *CoinTicker) (Order, error) {
 	log.Printf("executing %s strategy", PurchaseOnlyType)
-	return (*op.ExchangeService).Purchase(ticker, 100)
+	return (*op.ExchangeService).Purchase(ticker, ConfigInstance().PurchaseAmountInUsdt)
 }
 
 type PurchaseWithStopLoss struct {

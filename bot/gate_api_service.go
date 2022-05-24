@@ -1,4 +1,4 @@
-package modules
+package bot
 
 import (
 	"context"
@@ -20,6 +20,12 @@ func NewGateApiService() GateApiService {
 func (gs *GateApiService) ListCurrencyPairs() ([]gateapi.CurrencyPair, error) {
 	ctx := createStandardContext()
 	result, _, err := gs.apiClient.SpotApi.ListCurrencyPairs(ctx)
+	return result, handleGateError(err)
+}
+
+func (gs *GateApiService) ListCurrencies() ([]gateapi.Currency, error) {
+	ctx := createStandardContext()
+	result, _, err := gs.apiClient.SpotApi.ListCurrencies(ctx)
 	return result, handleGateError(err)
 }
 
@@ -58,11 +64,12 @@ func createStandardContext() context.Context {
 }
 
 func createAuthContext() context.Context {
+	config := ConfigInstance()
 	return context.WithValue(context.Background(),
 		gateapi.ContextGateAPIV4,
 		gateapi.GateAPIV4{
-			Key:    "YOUR_API_KEY",
-			Secret: "YOUR_API_SECRET",
+			Key:    config.GateApiKey,
+			Secret: config.GateSecretKey,
 		},
 	)
 }

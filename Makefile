@@ -2,7 +2,10 @@
 
 build: gomodgen
 	export GO111MODULE=on
-	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/trade functions/trade/main.go
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/coinPurchase functions/coinPurchase/main.go
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/syncCoins functions/syncCoins/main.go
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/checkCoins functions/checkCoins/main.go
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/checkNews functions/checkNews/main.go
 
 clean:
 	rm -rf ./bin ./vendor go.sum
